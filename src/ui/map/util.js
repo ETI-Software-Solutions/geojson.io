@@ -300,12 +300,25 @@ function bindPopup(e, context, writable) {
         key +
         '"' +
         (!writable ? ' readonly' : '') +
-        ' /></th>' +
-        '<td><input type="text" value="' +
-        properties[key] +
-        '"' +
-        (!writable ? ' readonly' : '') +
-        ' /></td></tr>';
+        ' /></th>';
+
+      if (
+        properties[key].startsWith('http://') ||
+        properties[key].startsWith('https://')
+      ) {
+        table +=
+          `<td><a style="margin-left: 5px" href="${properties[key]}" target="_blank">` +
+          properties[key] +
+          (!writable ? ' readonly' : '') +
+          '</a></td></tr>';
+      } else {
+        table +=
+          '<td><input type="text" value="' +
+          properties[key] +
+          '"' +
+          (!writable ? ' readonly' : '') +
+          ' /></td></tr>';
+      }
     }
   }
 
