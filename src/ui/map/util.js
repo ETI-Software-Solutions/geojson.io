@@ -198,6 +198,121 @@ function geojsonToLayer(context, writable) {
   }
 }
 
+function selectDevices(asset_array){
+  setTimeout(() => {
+    const deviceSelect = document.getElementById('devices');
+    const deviceTableElement = document.getElementById('deviceTable'); // Get the deviceTable element
+  
+    deviceSelect.addEventListener('change', function () {
+      const selectedValue = deviceSelect.value;
+  
+      // Check if an option was selected
+      if (selectedValue) {
+        // Find the selected device object from asset_array
+        const selectedDevice = asset_array.find(item => item.device_id == selectedValue);
+  
+        // Update the deviceTable HTML content
+        let newTableContent = '<table class="metadata" id="deviceTable">';
+        if (selectedDevice) {
+          Object.entries(selectedDevice).forEach(([key, value]) => {
+            const safeValue = value
+              ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              : ''; // Sanitize value
+              if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+                newTableContent += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+              } else {
+                newTableContent += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+              }
+          });
+        }
+        newTableContent += '</table>';
+  
+        // Replace deviceTable content with the new content
+        deviceTableElement.innerHTML = newTableContent;
+      } else {
+        deviceTableElement.innerHTML = '<table class="metadata"><tr><td colspan="2">No device selected</td></tr></table>';
+      }
+    });
+  }, 0);
+}
+
+function selectPhones(asset_array){
+  setTimeout(() => {
+    const phoneSelect = document.getElementById('phones');
+    const phoneTableElement = document.getElementById('phoneTable'); // Get the phoneTable element
+  
+    phoneSelect.addEventListener('change', function () {
+      const selectedValue = phoneSelect.value;
+  
+      // Check if an option was selected
+      if (selectedValue) {
+        // Find the selected phone object from asset_array
+        const selectedphone = asset_array.find(item => item.directory_num == selectedValue);
+  
+        // Update the phoneTable HTML content
+        let newTableContent = '<table class="metadata" id="phoneTable">';
+        if (selectedphone) {
+          Object.entries(selectedphone).forEach(([key, value]) => {
+            const safeValue = value
+              ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              : ''; // Sanitize value
+              if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+                newTableContent += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+              } else {
+                newTableContent += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+              }
+          });
+        }
+        newTableContent += '</table>';
+  
+        // Replace phoneTable content with the new content
+        phoneTableElement.innerHTML = newTableContent;
+      } else {
+        phoneTableElement.innerHTML = '<table class="metadata"><tr><td colspan="2">No phone selected</td></tr></table>';
+      }
+    });
+  }, 0);
+}
+
+function selectServices(asset_array){
+  setTimeout(() => {
+    const serviceSelect = document.getElementById('services');
+    const serviceTableElement = document.getElementById('serviceTable'); // Get the serviceTable element
+  
+    serviceSelect.addEventListener('change', function () {
+      const selectedValue = serviceSelect.value;
+  
+      // Check if an option was selected
+      if (selectedValue) {
+        // Find the selected service object from asset_array
+        const selectedservice = asset_array.find(item => item.service_name == selectedValue);
+  
+        // Update the serviceTable HTML content
+        let newTableContent = '<table class="metadata" id="serviceTable">';
+        if (selectedservice) {
+          Object.entries(selectedservice).forEach(([key, value]) => {
+            const safeValue = value
+              ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              : ''; // Sanitize value  
+
+            if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+              newTableContent += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+            } else {
+              newTableContent += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+            }
+          });
+        }
+        newTableContent += '</table>';
+  
+        // Replace serviceTable content with the new content
+        serviceTableElement.innerHTML = newTableContent;
+      } else {
+        serviceTableElement.innerHTML = '<table class="metadata"><tr><td colspan="2">No service selected</td></tr></table>';
+      }
+    });
+  }, 0);
+}
+
 function bindPopup(e, context, writable) {
   // build the popup using the actual feature from the data store,
   // not the feature returned from queryRenderedFeatures()
@@ -210,6 +325,13 @@ function bindPopup(e, context, writable) {
   const props = feature.properties;
   let table = '';
   let info = '';
+  let deviceAsset = '';
+  let phoneAsset = '';
+  let serviceAsset = '';
+  let deviceTable = '';
+  let phoneTable = '';
+  let serviceTable = '';
+  let edit_link = '';
 
   let properties = {};
 
@@ -295,29 +417,140 @@ function bindPopup(e, context, writable) {
         (!writable ? ' readonly' : '') +
         ' /></td></tr>';
     } else {
-      table +=
-        '<tr><th><input type="text" value="' +
+  
+      if(properties[key].startsWith("http://") || properties[key].startsWith("https://")) {
+        
+        // Link row
+        //table += `<tr><td colspan="2"><a style="margin-left: 5px;" href="${properties[key]}" target="_blank">` +
+        //key +
+        //(!writable ? ' readonly' : '') +
+        //'</a></td></tr>';
+        edit_link = '<a style="margin-left: 5px;" href="' + properties[key] + '" target="_blank">' + key + '</a>';
+
+      } else if (properties[key].startsWith("[{") && properties[key].endsWith('}]')) {
+        // List row 
+
+        let asset_array = '';
+        let decoded_array = properties[key].replace(/&quot;/g, '"');
+
+        try {
+          asset_array = JSON.parse(decoded_array);
+        } catch (error) {
+          console.error("Failed to parse JSON:", error);
+        }
+
+
+        if (key == "devices"){
+
+          deviceAsset += '<label for="' + key + '" style="font-weight: bold;">Select ' + key + ':</label>' +
+        '<select name="' + key + '" id="' + key + '">'
+
+          for (let item of asset_array) {
+            deviceAsset += '<option value="' + item.device_id + '">' + item.device_id + '</option>'
+          }
+
+          deviceAsset += '</select>'
+
+          deviceTable += '<table class="metadata" id="deviceTable">';
+          if (asset_array.length > 0) {
+            Object.entries(asset_array[0]).forEach(([key, value]) => {
+              const safeValue = value
+                ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                : ''; // Sanitize value
+              
+                if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+                  deviceTable += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+                } else {
+                  deviceTable += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+                }
+            });
+          }
+          deviceTable += '</table>';
+
+          selectDevices(asset_array);
+
+        } else if(key == "phones"){
+
+          phoneAsset += '<label for="' + key + '" style="font-weight: bold;">Select ' + key + ':</label>' +
+        '<select name="' + key + '" id="' + key + '">'
+
+          for (let item of asset_array) {
+            phoneAsset += '<option value="' + item.directory_num + '">' + item.directory_num + '</option>'
+          }
+
+          phoneAsset += '</select>'
+
+          phoneTable += '<table class="metadata" id="phoneTable">';
+          if (asset_array.length > 0) {
+            Object.entries(asset_array[0]).forEach(([key, value]) => {
+              const safeValue = value
+                ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                : ''; // Sanitize value
+                
+                if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+                  phoneTable += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+                } else {
+                  phoneTable += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+                }
+            });
+          }
+          phoneTable += '</table>';
+
+          selectPhones(asset_array);
+
+        } else if(key == "services"){
+
+          serviceAsset += '<label for="' + key + '" style="font-weight: bold;">Select ' + key + ':</label>' +
+        '<select name="' + key + '" id="' + key + '">'
+
+          for (let item of asset_array) {
+            serviceAsset += '<option value="' + item.service_name + '">' + item.service_name + '</option>'
+          }
+
+          serviceAsset += '</select>'
+
+          serviceTable += '<table class="metadata" id="serviceTable">';
+          if (asset_array.length > 0) {
+            Object.entries(asset_array[0]).forEach(([key, value]) => {
+              const safeValue = value
+                ? value.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                : ''; // Sanitize value
+
+                if (safeValue.startsWith("http://") || safeValue.startsWith("https://")){
+                  serviceTable += `<tr><td colspan="2"><a href="${safeValue}" target="_blank">${key}</a></td></tr>`
+                } else {
+                  serviceTable += `<tr><td>${key}</td><td>${safeValue}</td></tr>`;
+                }
+            });
+          }
+          serviceTable += '</table>';
+
+          selectServices(asset_array);
+        }
+
+      } else if (key.startsWith("header_info")) {
+        
+        // Header row
+        table += '<tr><td colspan="2" style="font-weight: bold;"><input type="text" value="' +
+        properties[key] +
+        '"' +
+        (!writable ? ' readonly' : '') +
+        ' /></tr>';
+
+      } else {
+
+        // Normal text row
+        table += '<tr><th><input type="text" value="' +
         key +
         '"' +
         (!writable ? ' readonly' : '') +
-        ' /></th>';
+        ' /></th>'
 
-      if (
-        properties[key].startsWith('http://') ||
-        properties[key].startsWith('https://')
-      ) {
-        table +=
-          `<td><a style="margin-left: 5px" href="${properties[key]}" target="_blank">` +
-          properties[key] +
-          (!writable ? ' readonly' : '') +
-          '</a></td></tr>';
-      } else {
-        table +=
-          '<td><input type="text" value="' +
-          properties[key] +
-          '"' +
-          (!writable ? ' readonly' : '') +
-          ' /></td></tr>';
+        table += '<td><input type="text" value="' +
+        properties[key] +
+        '"' +
+        (!writable ? ' readonly' : '') +
+        ' /></td></tr>';
       }
     }
   }
@@ -418,15 +651,42 @@ function bindPopup(e, context, writable) {
     '<input class="hide" type="radio" id="properties" name="tab-group" checked="true">' +
     '<label class="keyline-top keyline-right tab-toggle pad0 pin-bottomleft z10 center col6" for="properties">Properties</label>' +
     '<div class="space-bottom1 col12 content">' +
-    '<table class="space-bottom0 marker-properties">' +
+    '<table class="space-bottom0 marker-properties" id="asset_table">' +
     table +
     '</table>' +
+    '<div>' +
+    edit_link +
+    ' </div>' +
     (writable
       ? '<div class="add-row-button add fl col4"><span class="fa-solid fa-plus"></span> Add row</div>'
       : '') +
     (writable && showAddStyleButton
       ? '<div class="add-simplestyle-properties-button fl text-right col8">Add simplestyle properties</div>'
       : '') +
+    '<div>' +
+    '<div style="margin-top: 5px; margin-bottom: 5px;">' +
+    phoneAsset +
+    ' </div>' +
+    '<div style="height: 100px; overflow-x: auto; border: 1px solid grey;">' +
+    phoneTable +
+    ' </div>' +
+    '</div>' +
+    '<div>' +
+    '<div style="margin-top: 5px; margin-bottom: 5px;">' +
+    deviceAsset +
+    ' </div>' +
+    '<div style="height: 100px; overflow-x: auto; border: 1px solid grey;">' +
+    deviceTable +
+    ' </div>' +
+    '</div>' +
+    '<div>' +
+    '<div style="margin-top: 5px; margin-bottom: 5px;">' +
+    serviceAsset +
+    ' </div>' +
+    '<div style="height: 100px; overflow-x: auto; border: 1px solid grey;">' +
+    serviceTable +
+    ' </div>' +
+    '</div>' +
     '</div>' +
     '</div>' +
     '<div class="space-bottom2 tab col12">' +
