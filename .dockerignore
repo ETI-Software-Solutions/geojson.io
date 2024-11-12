@@ -1,0 +1,12 @@
+node_modules/
+charts/
+test/
+.vscode/
+
+.gitignore
+LICENSE
+CODEOWNERS
+CNAME
+deploy.sh
+Dockerfile
+Makefile
