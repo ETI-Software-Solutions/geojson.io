@@ -336,16 +336,7 @@ function bindPopup(e, context, writable) {
         ' /></td></tr>';
     } else {
   
-      if(properties[key].startsWith("http://") || properties[key].startsWith("https://")) {
-        
-        // Link row
-        //table += `<tr><td colspan="2"><a style="margin-left: 5px;" href="${properties[key]}" target="_blank">` +
-        //key +
-        //(!writable ? ' readonly' : '') +
-        //'</a></td></tr>';
-        edit_link = '<a style="margin-left: 5px;" href="' + properties[key] + '" target="_blank">' + key + '</a>';
-
-      } else if (properties[key].startsWith("[{") && properties[key].endsWith('}]')) {
+      if (properties[key].startsWith("[{") && properties[key].endsWith('}]')) {
         // List row 
 
         let asset_array = '';
@@ -406,15 +397,6 @@ function bindPopup(e, context, writable) {
         assets += '</div>'; // End asset
 
         selectAssets(asset_array, key, tableId)
-
-      } else if (key.startsWith("header_info")) {
-        
-        // Header row
-        table += '<tr><td colspan="2" style="font-weight: bold;"><input type="text" value="' +
-        properties[key] +
-        '"' +
-        (!writable ? ' readonly' : '') +
-        ' /></tr>';
 
       } else {
 
@@ -533,6 +515,7 @@ function bindPopup(e, context, writable) {
     '<table class="space-bottom0 marker-properties">' +
     table +
     '</table>' +
+    /*
     '<div>' +
     edit_link +
     ' </div>' +
@@ -542,6 +525,7 @@ function bindPopup(e, context, writable) {
     (writable && showAddStyleButton
       ? '<div class="add-simplestyle-properties-button fl text-right col8">Add simplestyle properties</div>'
       : '') +
+    */
     assets +
     '</div>' +
     '</div>' +
@@ -559,6 +543,7 @@ function bindPopup(e, context, writable) {
   const content =
     '<form action="javascript:void(0);">' +
     tabs +
+    /*
     (writable
       ? '<div class="clearfix col12 pad1 keyline-top">' +
         '<div class="pill col6">' +
@@ -566,7 +551,7 @@ function bindPopup(e, context, writable) {
         '<button class="minor col6 cancel">Cancel</button>' +
         '</div>' +
         '<button class="col6 text-right pad0 delete-invert"><span class="fa-solid fa-trash"></span> Delete feature</button></div>'
-      : '') +
+      : '') +*/
     '</form>';
 
   const popupOffsets = {
